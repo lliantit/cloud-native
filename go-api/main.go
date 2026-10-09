@@ -147,6 +147,27 @@ func main() {
 		w.Header().Set("Content-Type", "application/json")
 		w.Write([]byte(`{"message": "CPU async completed"}`))
 	})
+	// Важка операція: послідовне виконання двох циклів в одному потоці
+	mux.HandleFunc("/cpu-seq", func(w http.ResponseWriter, r *http.Request) {
+		iterations := 500_000_000
+
+		// Перший важкий цикл
+		count1 := 0
+		for i := 0; i < iterations; i++ {
+			count1++
+		}
+
+		// Другий важкий цикл (послідовно після першого)
+		count2 := 0
+		for i := 0; i < iterations; i++ {
+			count2++
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{"message": "CPU sequential completed"}`))
+	})
+
+
 
 	println("Go сервер запущено на http://localhost:8081")
 	http.ListenAndServe(":8081", mux)
