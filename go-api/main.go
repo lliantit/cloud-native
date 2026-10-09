@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 )
 
 type Movie struct {
@@ -63,6 +64,12 @@ func main() {
 		}
 	})
 
+	mux.HandleFunc("/io", func(w http.ResponseWriter, r *http.Request) {
+		time.Sleep(2 * time.Second)
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{"message": "I/O operation completed"}`))
+	})
+
 	// Read One, Update, Delete
 	mux.HandleFunc("/movies/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
@@ -112,6 +119,33 @@ func main() {
 			w.WriteHeader(http.StatusNoContent)
 			return
 		}
+	})
+
+	// Важка операція: паралельне виконання в окремих goroutines
+	mux.HandleFunc("/cpu-async", func(w http.ResponseWriter, r *http.Request) {
+		iterations := 500_000_000
+		var wg sync.WaitGroup
+		wg.Add(2)
+
+		go func() {
+			defer wg.Done()
+			count1 := 0
+			for i := 0; i < iterations; i++ {
+				count1++
+			}
+		}()
+
+		go func() {
+			defer wg.Done()
+			count2 := 0
+			for i := 0; i < iterations; i++ {
+				count2++
+			}
+		}()
+
+		wg.Wait()
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{"message": "CPU async completed"}`))
 	})
 
 	println("Go сервер запущено на http://localhost:8081")
