@@ -52,6 +52,23 @@ app.delete('/movies/:id', (req, res) => {
     res.status(204).send();
 });
 
+app.get('/io', (req, res) => {
+    setTimeout(() => {
+        res.status(200).json({ message: 'I/O operation completed' });
+    }, 2000);
+});
+
+app.get('/cpu', (req, res) => {
+    let count = 0;
+    for (let i = 0; i < 500_000_000; i++) {
+        count++;
+    }
+    res.status(200).json({ message: 'CPU operation completed', count });
+});
+
+
+
+
 const PORT = 5000;
 app.listen(PORT, () => {
     console.log(`Node.js сервер запущено на http://localhost:${PORT}`);
